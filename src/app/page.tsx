@@ -3,19 +3,13 @@
 import { useEffect } from "react";
 
 export default function HomePage() {
-  // const sse = new EventSource("localhost:3000/games/stream");
-
-  // sse.onmessage = (event) => {
-  //   console.log(event.data);
-  // };
-
   useEffect(() => {
-    const eventSource = new EventSource("/games/stream", {
+    const eventSource = new EventSource("api/games/stream", {
       withCredentials: true,
     });
 
     eventSource.onerror = (event) => {
-      eventSource.close(); // close the connection (TODO should only occur when it properly closes)
+      console.log(`ERROR`);
     };
 
     eventSource.onopen = () => {
@@ -27,5 +21,17 @@ export default function HomePage() {
     };
   }, []);
 
-  return <main></main>;
+  return (
+    <main>
+      <button
+        onClick={async () => {
+          return fetch("/api/games/guess", {
+            method: "POST",
+          });
+        }}
+      >
+        test
+      </button>
+    </main>
+  );
 }
