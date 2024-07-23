@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { type GameUpdate } from "./api/games/guess/route";
 
 export default function HomePage() {
   useEffect(() => {
@@ -17,7 +18,11 @@ export default function HomePage() {
     };
 
     eventSource.onmessage = (event) => {
-      console.log(`MSG: ${event.data}`);
+      if (event.data === "connected") return;
+
+      const asJson = JSON.parse(event.data as string) as GameUpdate;
+
+      console.log(`MSG 0: ${asJson.data}`);
     };
   }, []);
 

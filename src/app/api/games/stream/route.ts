@@ -7,7 +7,7 @@ export async function GET() {
 
   const readable = new ReadableStream({
     async start(controller) {
-      controller.enqueue("data: Connected\n\n");
+      controller.enqueue(`data: connected\n\n`);
 
       const c = upstashKafka.consumer();
 
@@ -22,11 +22,13 @@ export async function GET() {
         console.log("Messages", messages);
 
         messages.forEach((message) => {
+          // console.log(`${message.key === key ? "MATCH" : "NO MATCH"}`);
+
           // if (message.key !== key) return;
 
-          console.log(`Enqueueing ${JSON.stringify(message.value)}`);
+          console.log(`Enqueueing ${message.value}`);
 
-          controller.enqueue(`data: ${JSON.stringify(message.value)}\n\n`);
+          controller.enqueue(`data: ${message.value}\n\n`);
         });
       }
     },
