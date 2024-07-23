@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { type GameUpdate } from "./api/games/guess/route";
+import { makeGuess, type GameUpdate } from "~/server";
 
 export default function HomePage() {
   useEffect(() => {
@@ -30,9 +30,7 @@ export default function HomePage() {
     <main>
       <button
         onClick={async () => {
-          return fetch("/api/games/guess", {
-            method: "POST",
-          });
+          return makeGuess({ gameId: "game1" });
         }}
       >
         test

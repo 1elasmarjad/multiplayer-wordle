@@ -6,4 +6,3 @@ export const upstashKafka = new UpstashKafka({
   username: env.UPSTASH_KAFKA_USERNAME,
   password: env.UPSTASH_KAFKA_PASSWORD,
 });
-
