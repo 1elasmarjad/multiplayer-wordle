@@ -1,34 +1,14 @@
 "use server";
 
-import { env } from "./env";
-import { upstashKafka } from "./kafka";
+type userId = string;
 
-export interface GameUpdate {
-  data: number;
-  test: string;
-}
+type GameData = Record<userId, ("correct" | "partial" | "unknown")[]>;
 
 export async function makeGuess({ gameId }: { gameId: string }) {
   console.log("Attempted guess");
-
-  const topic = "game-updates";
-  const message = JSON.stringify({
-    data: 1,
-    test: "this is a test",
-  } satisfies GameUpdate);
-
-  const p = upstashKafka.producer();
-
-  console.log("Producing");
-
-  const res = await p.produce(topic, message, {
-    key: "game_test",
-    timestamp: Date.now(),
-  });
-
-  console.log("Produced", res);
 }
 
-export async function getGameUpdates() {
-    
+export async function getGameUpdates(): Promise<GameData> {
+  return {};
 }
+

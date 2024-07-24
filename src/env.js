@@ -10,10 +10,6 @@ export const env = createEnv({
     NODE_ENV: z.enum(["development", "test", "production"]),
     MONGO_URI: z.string().url(),
     MONGO_DB: z.string(),
-    UPSTASH_KAFKA_REST_URL: z.string().url(),
-    UPSTASH_KAFKA_USERNAME: z.string(),
-    UPSTASH_KAFKA_PASSWORD: z.string(),
-    UPSTASH_KAFKA_AUTH_TOKEN: z.string(),
   },
 
   /**
@@ -32,11 +28,7 @@ export const env = createEnv({
   runtimeEnv: {
     MONGO_URI: process.env.MONGO_URI,
     MONGO_DB: process.env.MONGO_DB,
-    UPSTASH_KAFKA_REST_URL: process.env.UPSTASH_KAFKA_REST_URL,
-    UPSTASH_KAFKA_USERNAME: process.env.UPSTASH_KAFKA_USERNAME,
-    UPSTASH_KAFKA_PASSWORD: process.env.UPSTASH_KAFKA_PASSWORD,
     NODE_ENV: process.env.NODE_ENV,
-    UPSTASH_KAFKA_AUTH_TOKEN: process.env.UPSTASH_KAFKA_AUTH_TOKEN
     // NEXT_PUBLIC_CLIENTVAR: process.env.NEXT_PUBLIC_CLIENTVAR,
   },
   /**
