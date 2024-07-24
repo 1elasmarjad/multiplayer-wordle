@@ -41,7 +41,7 @@ export async function joinLobby({
   if (!gameId) {
     const { gameId } = await createLobby(username);
     return {
-      gameId,
+      gameId, //rejoin
     };
   }
 
@@ -62,6 +62,13 @@ export async function joinLobby({
   }
 
   const userId = await getUserId({ createIfNotExists: true });
+
+  // player already in game?
+  if (game.players.some((player) => player.id === userId)) {
+    return {
+      gameId,
+    };
+  }
 
   // Add player to game
   await gamesCollection.updateOne(

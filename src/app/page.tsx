@@ -53,6 +53,7 @@ export default function HomePage() {
       <h1 className="text-center text-3xl font-semibold md:text-6xl">
         Multiplayer Wordle
       </h1>
+      <h2 className="mt-4">Developed by Jad El Asmar</h2>
 
       <Card className="my-32">
         <CardHeader>
