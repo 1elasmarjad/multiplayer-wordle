@@ -26,7 +26,7 @@ export default function HomePage() {
 
   const [username, setUsername] = useState<string>("");
 
-  const { data, isError, isSuccess, isPending, mutate } = useMutation({
+  const { isPending, mutate } = useMutation({
     mutationFn: async () => {
       const response = await joinLobby({
         username,
@@ -50,8 +50,7 @@ export default function HomePage() {
 
   return (
     <main className="flex h-screen w-full flex-col items-center justify-center">
-
-      <h1 className="text-3xl md:text-6xl font-semibold text-center">
+      <h1 className="text-center text-3xl font-semibold md:text-6xl">
         Multiplayer Wordle
       </h1>
 

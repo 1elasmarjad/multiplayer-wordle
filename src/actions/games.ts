@@ -1,5 +1,8 @@
 "use server";
 
+import { ObjectId } from "mongodb";
+import { gamesCollection } from "~/lib/mongodb";
+
 export interface WordGuess {
   wordGuess: string;
   guessStatus: "correct" | "misplaced" | "incorrect";
@@ -30,23 +33,25 @@ export async function getGame(gameId: string): Promise<
       error: string;
     }
 > {
+  const resp = await gamesCollection.findOne({
+    _id: new ObjectId(gameId),
+  });
+
+  if (!resp) {
+    return {
+      error: "Game not found",
+    };
+  }
+
   return {
-    gameId: gameId,
-    players: [
-      {
-        id: "1",
-        username: "Moon",
-      },
-      {
-        id: "2",
-        username: "Sun",
-      },
-    ],
-    leader: "1",
-    maxPlayers: 2,
-    guesses: {},
-    winner: null,
-    round: 0,
-    inLobby: true,
+    gameId: resp._id.toHexString(),
+    players: resp.players,
+    leader: resp.leader,
+    maxPlayers: resp.maxPlayers,
+    guesses: resp.guesses,
+    winner: resp.winner,
+    round: resp.round,
+    inLobby: resp.inLobby,
+    maxRounds: resp.maxRounds,
   };
 }

@@ -1,6 +1,9 @@
 "use server";
 
-import { getGame } from "./games";
+import { gamesCollection } from "~/lib/mongodb";
+import { type GameStatus, getGame } from "./games";
+import { getUserId } from "./users";
+import { ObjectId } from "mongodb";
 
 /**
  * Attempts to join/create a game
@@ -44,9 +47,9 @@ export async function joinLobby({
 
   const game = await getGame(gameId);
 
-  if (!game) {
+  if ("error" in game) {
     return {
-      error: "Game not found",
+      error: game.error,
     };
   }
 
@@ -58,10 +61,25 @@ export async function joinLobby({
     throw new Error("Game is full");
   }
 
+  const userId = await getUserId({ createIfNotExists: true });
+
   // Add player to game
-  // TODO
+  await gamesCollection.updateOne(
+    {
+      _id: new ObjectId(gameId),
+    },
+    {
+      $push: {
+        players: {
+          id: userId!,
+          username,
+        },
+      },
+    },
+  );
+
   return {
-    gameId: "TODO",
+    gameId,
   };
 }
 
@@ -71,7 +89,24 @@ export async function joinLobby({
 async function createLobby(username: string): Promise<{
   gameId: string;
 }> {
+  const requesterId = await getUserId({ createIfNotExists: true });
+
+  const mongoResp = await gamesCollection.insertOne({
+    players: [
+      {
+        id: requesterId!,
+        username,
+      },
+    ],
+    leader: requesterId!,
+    maxPlayers: 2, // TODO: allow more players in the future
+    guesses: {},
+    winner: null,
+    round: 0, // not started yet
+    inLobby: true,
+  } satisfies Omit<GameStatus, "gameId">);
+
   return {
-    gameId: "exampleGameId",
+    gameId: mongoResp.insertedId.toHexString(),
   };
 }
