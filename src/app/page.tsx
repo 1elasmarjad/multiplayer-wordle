@@ -50,7 +50,12 @@ export default function HomePage() {
 
   return (
     <main className="flex h-screen w-full flex-col items-center justify-center">
-      <Card>
+
+      <h1 className="text-3xl md:text-6xl font-semibold text-center">
+        Multiplayer Wordle
+      </h1>
+
+      <Card className="my-32">
         <CardHeader>
           <CardTitle>{gameId ? "Join Game" : "Create Game"}</CardTitle>
           <CardDescription>

@@ -1,4 +1,5 @@
-import { getGame } from "~/actions/games";
+import { getUserId } from "~/actions/users";
+import GameClient from "~/components/game/gameclient";
 
 export default async function GamePage({
   params,
@@ -7,11 +8,7 @@ export default async function GamePage({
     gameId: string;
   };
 }) {
-  const game = await getGame(params.gameId);
+  const userId = await getUserId({ createIfNotExists: true });
 
-  if (!game) {
-    return <div>Game not found</div>;
-  }
-
-  return <></>;
+  return <GameClient gameId={params.gameId} userId={userId!} />;
 }
