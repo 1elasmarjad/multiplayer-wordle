@@ -1,6 +1,6 @@
 "use client";
 
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { joinLobby } from "~/actions/lobby";
@@ -17,6 +17,7 @@ import {
   CardHeader,
   CardTitle,
 } from "~/components/ui/card";
+import { getGame } from "~/actions/games";
 
 export default function HomePage() {
   const router = useRouter();
@@ -48,6 +49,31 @@ export default function HomePage() {
     },
   });
 
+  const { data: game } = useQuery({
+    queryKey: ["game", gameId],
+    queryFn: async () => {
+      if (gameId === undefined) return null;
+
+      const game = await getGame(gameId);
+
+      if ("error" in game) {
+        return null;
+      }
+
+      const uname = game.players.find(
+        (player) => player.id === game.leader,
+      )?.username;
+
+      setUsername(uname ?? "");
+
+      return {
+        ...game,
+        username: uname,
+      };
+    },
+    enabled: gameId !== undefined,
+  });
+
   return (
     <main className="flex h-screen w-full flex-col items-center justify-center">
       <h1 className="text-center text-3xl font-semibold md:text-6xl">
@@ -71,10 +97,11 @@ export default function HomePage() {
               <Input
                 type="text"
                 id="username"
-                placeholder="Your in-game name"
+                placeholder={game?.username ?? "Enter your username"}
                 autoComplete="off"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
+                disabled={game?.username !== undefined}
               />
             </div>
           </div>

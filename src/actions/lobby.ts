@@ -53,21 +53,22 @@ export async function joinLobby({
     };
   }
 
+  const userId = await getUserId({ createIfNotExists: true });
+
+  const alreadyInGame = game.players.some((player) => player.id === userId);
+
+  if (alreadyInGame) {
+    return {
+      gameId, //rejoin
+    };
+  }
+
   if (!game.inLobby) {
     throw new Error("Game has already started");
   }
 
   if (game.players.length >= game.maxPlayers) {
     throw new Error("Game is full");
-  }
-
-  const userId = await getUserId({ createIfNotExists: true });
-
-  // player already in game?
-  if (game.players.some((player) => player.id === userId)) {
-    return {
-      gameId,
-    };
   }
 
   // Add player to game
