@@ -2,6 +2,7 @@
 
 import { ObjectId } from "mongodb";
 import { gamesCollection } from "~/lib/mongodb";
+import { getUserId } from "./users";
 
 export interface WordGuess {
   wordGuess: string;
@@ -54,4 +55,35 @@ export async function getGame(gameId: string): Promise<
     inLobby: resp.inLobby,
     maxRounds: resp.maxRounds,
   };
+}
+
+export async function startGame(
+  gameId: string,
+): Promise<void | { error: string }> {
+  const userId = await getUserId({ createIfNotExists: true });
+
+  const game = await getGame(gameId);
+
+  if ("error" in game) {
+    return {
+      error: game.error,
+    };
+  }
+
+  if (game.leader !== userId) {
+    return {
+      error: "Only the leader can start the game",
+    };
+  }
+
+  await gamesCollection.updateOne(
+    {
+      _id: new ObjectId(gameId),
+    },
+    {
+      $set: {
+        inLobby: false,
+      },
+    },
+  );
 }
