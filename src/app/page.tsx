@@ -41,7 +41,6 @@ export default function HomePage() {
       return response;
     },
     onSuccess: (data) => {
-      toast.success("Successfully joined game");
       router.push(`/${data.gameId}`);
     },
     onError: (error) => {

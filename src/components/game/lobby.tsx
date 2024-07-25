@@ -28,9 +28,6 @@ export default function Lobby({
     onError: (error) => {
       toast.error(error.message);
     },
-    onSuccess: () => {
-      toast.success("Game started!");
-    },
   });
 
   return (

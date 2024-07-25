@@ -7,6 +7,7 @@ import toast from "react-hot-toast";
 import { Loader2 } from "lucide-react";
 import { useState } from "react";
 import Board from "./board";
+import Keyboard from "./keyboard";
 
 export default function GameClient({
   gameId,
@@ -16,6 +17,7 @@ export default function GameClient({
   userId: string;
 }) {
   const [refetchEnabled, setRefetchEnabled] = useState<boolean>(true);
+  const [guess, setGuess] = useState<WordGuess[]>([]);
 
   const { data: game, isLoading: gameLoading } = useQuery({
     queryKey: ["game", gameId],
@@ -93,7 +95,15 @@ export default function GameClient({
 
   return (
     <main className="flex h-screen w-full flex-col items-center justify-center">
-      <Board boardData={myGuesses} />
+      <Board boardData={myGuesses} newGuess={guess} />
+      <Keyboard
+        correctKeys={[]}
+        misplacedKeys={[]}
+        dneKeys={[]}
+        guess={guess}
+        setGuess={setGuess}
+        attemptGuess={() => console.log("attempting guess")}
+      />
     </main>
   );
 }
