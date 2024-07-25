@@ -89,37 +89,41 @@ export default function HomePage() {
               : "Enter your username to create a private session"}
           </CardDescription>
         </CardHeader>
-        <CardContent>
-          <div className="my-1.5 flex w-full flex-col gap-4">
-            <div className="w-full">
-              <Label htmlFor="username">Username</Label>
-              <Input
-                type="text"
-                id="username"
-                placeholder={game?.username ?? "Enter your username"}
-                autoComplete="off"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                disabled={game?.username !== undefined || isPending}
-              />
-            </div>
-          </div>
-        </CardContent>
-        <CardFooter>
-          <Button
-            disabled={isPending}
-            onClick={() => mutate()}
-            className="w-full"
-          >
-            {isPending && (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              </>
-            )}
 
-            {gameId ? "Join Game" : "Create Game"}
-          </Button>
-        </CardFooter>
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            mutate();
+          }}
+        >
+          <CardContent>
+            <div className="my-1.5 flex w-full flex-col gap-4">
+              <div className="w-full">
+                <Label htmlFor="username">Username</Label>
+                <Input
+                  type="text"
+                  id="username"
+                  placeholder={game?.username ?? "Enter your username"}
+                  autoComplete="off"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  disabled={game?.username !== undefined || isPending}
+                />
+              </div>
+            </div>
+          </CardContent>
+          <CardFooter>
+            <Button disabled={isPending} className="w-full" type="submit">
+              {isPending && (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                </>
+              )}
+
+              {gameId ? "Join Game" : "Create Game"}
+            </Button>
+          </CardFooter>
+        </form>
       </Card>
     </main>
   );

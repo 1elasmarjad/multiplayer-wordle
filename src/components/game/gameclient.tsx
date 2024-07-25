@@ -1,8 +1,13 @@
 "use client";
 
-import { getGame, type WordGuess } from "~/actions/games";
+import {
+  type GameStatus,
+  getGame,
+  makeGuess,
+  type LetterGuess,
+} from "~/actions/games";
 import Lobby from "./lobby";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import { Loader2 } from "lucide-react";
 import { useState } from "react";
@@ -17,9 +22,10 @@ export default function GameClient({
   userId: string;
 }) {
   const [refetchEnabled, setRefetchEnabled] = useState<boolean>(true);
-  const [guess, setGuess] = useState<WordGuess[]>([]);
+  const [game, setGame] = useState<GameStatus | null>(null);
+  const [guess, setGuess] = useState<LetterGuess[]>([]);
 
-  const { data: game, isLoading: gameLoading } = useQuery({
+  const { isLoading: gameLoading } = useQuery({
     queryKey: ["game", gameId],
     queryFn: async () => {
       try {
@@ -30,6 +36,8 @@ export default function GameClient({
           return null;
         }
 
+        setGame(response);
+
         return response;
       } catch (error) {
         setRefetchEnabled(false);
@@ -38,6 +46,39 @@ export default function GameClient({
     },
     refetchInterval: 1000,
     enabled: refetchEnabled,
+  });
+
+  const {
+    isPending: guessLoading,
+    mutate: guessMutate,
+  } = useMutation({
+    mutationFn: async () => {
+
+      console.log(`gameId: ${gameId}, guess: `, guess);
+
+      const response = await makeGuess(gameId, guess);
+
+      if ("error" in response) {
+        toast.error(response.error as string);
+        throw Error(response.error as string);
+      }
+
+      return response;
+    },
+    onSuccess: (data) => {
+      setGuess([]);
+      setGame((prev) => {
+        if (!prev) return prev;
+
+        return {
+          ...prev,
+          guesses: data,
+        };
+      });
+    },
+    onError: (error) => {
+      toast.error(error.message);
+    },
   });
 
   if (gameLoading) {
@@ -68,41 +109,16 @@ export default function GameClient({
     return <Lobby data={game} userId={userId} />;
   }
 
-  const myGuesses = [
-    [
-      {
-        word: "a",
-        status: "misplaced",
-      },
-      {
-        word: "p",
-        status: "correct",
-      },
-      {
-        word: "p",
-        status: "misplaced",
-      },
-      {
-        word: "l",
-        status: "dne",
-      },
-      {
-        word: "e",
-        status: "dne",
-      },
-    ],
-  ] satisfies WordGuess[][];
-
   return (
     <main className="flex h-screen w-full flex-col items-center justify-center">
-      <Board boardData={myGuesses} newGuess={guess} />
+      <Board boardData={game.guesses[userId]?? []} newGuess={guess} />
       <Keyboard
         correctKeys={[]}
         misplacedKeys={[]}
         dneKeys={[]}
         guess={guess}
         setGuess={setGuess}
-        attemptGuess={() => console.log("attempting guess")}
+        attemptGuess={() => guessMutate()}
       />
     </main>
   );

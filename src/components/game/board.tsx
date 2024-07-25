@@ -1,14 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { type GuessStatus, type WordGuess } from "~/actions/games";
+import { type GuessStatus, type LetterGuess } from "~/actions/games";
 
-const emptyRow: WordGuess[] = [
-  { word: "", status: "empty" },
-  { word: "", status: "empty" },
-  { word: "", status: "empty" },
-  { word: "", status: "empty" },
-  { word: "", status: "empty" },
+const emptyRow: LetterGuess[] = [
+  { letter: "", status: "empty" },
+  { letter: "", status: "empty" },
+  { letter: "", status: "empty" },
+  { letter: "", status: "empty" },
+  { letter: "", status: "empty" },
 ];
 
 const maxRows = 5;
@@ -17,10 +17,10 @@ export default function Board({
   boardData,
   newGuess,
 }: {
-  boardData: WordGuess[][];
-  newGuess: WordGuess[];
+  boardData: LetterGuess[][];
+  newGuess: LetterGuess[];
 }) {
-  const [newBoardData, setNewBoardData] = useState<WordGuess[][]>([
+  const [newBoardData, setNewBoardData] = useState<LetterGuess[][]>([
     ...boardData,
   ]);
 
@@ -47,7 +47,7 @@ export default function Board({
               key={j}
               data={
                 row[j] ?? {
-                  word: "",
+                  letter: "",
                   status: "empty",
                 }
               }
@@ -59,12 +59,12 @@ export default function Board({
   );
 }
 
-function Tile({ data }: { data: WordGuess }) {
+function Tile({ data }: { data: LetterGuess }) {
   return (
     <div
       className={`${getTileColor(data.status)} flex h-24 w-24 select-none items-center justify-center rounded-md border-2 border-solid border-gray-400 text-3xl font-extrabold capitalize`}
     >
-      {data.word}
+      {data.letter}
     </div>
   );
 }

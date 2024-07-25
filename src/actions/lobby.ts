@@ -20,6 +20,12 @@ export async function joinLobby({
     }
   | { error: string }
 > {
+  if (username === "error") {
+    return {
+      error: "Invalid username",
+    };
+  }
+
   if (username.length < 3) {
     return {
       error: "Username must be at least 3 characters",
@@ -109,10 +115,11 @@ async function createLobby(username: string): Promise<{
     leader: requesterId!,
     maxPlayers: 2, // TODO: allow more players in the future
     guesses: {},
+    word: "river",
     winner: null,
     round: 0, // not started yet
     inLobby: true,
-  } satisfies Omit<GameStatus, "gameId">);
+  });
 
   return {
     gameId: mongoResp.insertedId.toHexString(),

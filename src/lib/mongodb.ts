@@ -15,8 +15,8 @@ const mongo = new MongoClient(uri, {
 
 export default mongo;
 
-export const gamesCollection: Collection<Omit<GameStatus, "gameId">> = mongo
-.db(env.MONGO_DB)
-.collection("games");
-
-
+export const gamesCollection: Collection<
+  Omit<GameStatus, "gameId"> & {
+    word: string;
+  }
+> = mongo.db(env.MONGO_DB).collection("games");

@@ -2,7 +2,7 @@
 
 import { Delete } from "lucide-react";
 import { type Dispatch, type SetStateAction } from "react";
-import { type WordGuess, type GuessStatus } from "~/actions/games";
+import { type LetterGuess, type GuessStatus } from "~/actions/games";
 
 const keyboardKeys = [
   ["q", "w", "e", "r", "t", "y", "u", "i", "o", "p"],
@@ -21,8 +21,8 @@ export default function Keyboard({
   correctKeys: string[];
   misplacedKeys: string[];
   dneKeys: string[];
-  guess: WordGuess[];
-  setGuess: Dispatch<SetStateAction<WordGuess[]>>;
+  guess: LetterGuess[];
+  setGuess: Dispatch<SetStateAction<LetterGuess[]>>;
   attemptGuess: () => void;
 }) {
   function handleKeyClick(char: string) {
@@ -40,7 +40,7 @@ export default function Keyboard({
       }
 
       // add the character to the guess
-      return [...prev, { word: char, status: "empty" }];
+      return [...prev, { letter: char, status: "empty" }];
     });
 
     if (char === "enter") {
