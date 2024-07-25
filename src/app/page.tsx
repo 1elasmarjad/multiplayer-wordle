@@ -101,7 +101,7 @@ export default function HomePage() {
                 autoComplete="off"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                disabled={game?.username !== undefined}
+                disabled={game?.username !== undefined || isPending}
               />
             </div>
           </div>

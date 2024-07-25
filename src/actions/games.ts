@@ -4,9 +4,11 @@ import { ObjectId } from "mongodb";
 import { gamesCollection } from "~/lib/mongodb";
 import { getUserId } from "./users";
 
+export type GuessStatus = "correct" | "misplaced" | "dne" | "empty";
+
 export interface WordGuess {
-  wordGuess: string;
-  guessStatus: "correct" | "misplaced" | "incorrect";
+  word: string;
+  status: GuessStatus;
 }
 
 export interface GameStatus {
@@ -19,7 +21,7 @@ export interface GameStatus {
   leader: string;
   maxPlayers: number;
 
-  guesses: Record<string, WordGuess[]>;
+  guesses: Record<string, WordGuess[][]>;
   winner: string | null;
   round: number;
 
