@@ -72,17 +72,22 @@ function Tile({ data }: { data: LetterGuess }) {
 export function getTileColor(
   status: GuessStatus,
   opts?: {
-    emptyColor?: string;
+    colors: {
+      correct?: string;
+      misplaced?: string;
+      dne?: string;
+      empty?: string;
+    }
   },
 ): string {
   switch (status) {
     case "correct":
-      return "bg-green-500";
+      return opts?.colors?.dne ?? "bg-green-500";
     case "misplaced":
-      return "bg-yellow-500";
+      return opts?.colors?.dne ?? "bg-yellow-500";
     case "dne":
-      return "bg-gray-200";
+      return opts?.colors?.dne  ?? "bg-gray-200";
     default:
-      return opts?.emptyColor ?? "bg-transparent";
+      return opts?.colors?.empty ?? "bg-transparent";
   }
 }

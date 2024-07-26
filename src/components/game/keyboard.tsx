@@ -49,6 +49,8 @@ export default function Keyboard({
     }
   }
 
+  const allKeyStatus = getKeyStatus(game.guesses[userId] ?? []);
+
   return (
     <section className="flex flex-col items-center justify-center gap-2">
       {keyboardKeys.map((row, i) => (
@@ -57,7 +59,7 @@ export default function Keyboard({
             <Key
               key={char}
               char={char}
-              status={getMostRecentStatus(game.guesses[userId] ?? [], char)}
+              status={allKeyStatus.get(char) ?? "empty"}
               onClick={() => handleKeyClick(char)}
             />
           ))}
@@ -77,12 +79,22 @@ export function Key({
   onClick?: () => void;
 }) {
   if (char === "enter") {
-    return <button onClick={onClick} className="outline outline-1 outline-gray-500 w-20 flex items-center justify-center rounded-sm">ENTER</button>;
+    return (
+      <button
+        onClick={onClick}
+        className="flex w-20 items-center justify-center rounded-sm outline outline-1 outline-gray-500"
+      >
+        ENTER
+      </button>
+    );
   }
 
   if (char === "backspace") {
     return (
-      <button onClick={onClick} className="outline outline-1 outline-gray-500 w-20 flex items-center justify-center rounded-sm">
+      <button
+        onClick={onClick}
+        className="flex w-20 items-center justify-center rounded-sm outline outline-1 outline-gray-500"
+      >
         <Delete />
       </button>
     );
@@ -91,28 +103,62 @@ export function Key({
   return (
     <button
       onClick={onClick}
-      className={`${getTileColor(status, {
-        emptyColor: "bg-gray-100",
-      })} h-10 w-10 rounded-sm text-lg outline outline-1 outline-gray-500`}
+      className={`${getTileColor(
+        status,
+      )} h-10 w-10 rounded-sm text-lg outline outline-1 outline-gray-500`}
     >
       {char.toUpperCase()}
     </button>
   );
 }
 
-export function getMostRecentStatus(
-  data: LetterGuess[][],
-  letter: string,
-): GuessStatus {
-  // get the most recent status of the letter
-  for (let i = data.length - 1; i >= 0; i--) {
-    const row = data[i]!;
-    const guess = row.find((g) => g.letter === letter);
-
-    if (guess) {
-      return guess.status;
-    }
+function statusValue(status: GuessStatus): number {
+  switch (status) {
+    case "correct":
+      return 0;
+    case "misplaced":
+      return 1;
+    case "empty":
+      return 2;
+    default:
+      return 3;
   }
+}
 
-  return "empty";
+function getKeyStatus(data: LetterGuess[][]): Map<string, GuessStatus> {
+  const keyValue = new Map<string, number>();
+
+  data.forEach((row) => {
+    row.forEach((col) => {
+      const letter = col.letter; // letter at this column
+      const status = col.status; // status at this column
+      const value = statusValue(status); // value of status
+
+      const currentSet = keyValue.get(letter);
+
+      if (currentSet === undefined || value < currentSet) {
+        keyValue.set(letter, value);
+      }
+    });
+  });
+
+  const result = new Map<string, GuessStatus>();
+
+  keyValue.forEach((value, key) => {
+    switch (value) {
+      case 0:
+        result.set(key, "correct");
+        break;
+      case 1:
+        result.set(key, "misplaced");
+        break;
+      case 2:
+        result.set(key, "empty");
+        break;
+      default:
+        result.set(key, "dne");
+    }
+  });
+
+  return result;
 }
