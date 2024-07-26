@@ -2,7 +2,12 @@
 
 import { Delete } from "lucide-react";
 import { type Dispatch, type SetStateAction } from "react";
-import { type LetterGuess, type GuessStatus } from "~/actions/games";
+import {
+  type LetterGuess,
+  type GuessStatus,
+  type GameStatus,
+} from "~/actions/games";
+import { getTileColor } from "./board";
 
 const keyboardKeys = [
   ["q", "w", "e", "r", "t", "y", "u", "i", "o", "p"],
@@ -11,17 +16,13 @@ const keyboardKeys = [
 ];
 
 export default function Keyboard({
-  correctKeys,
-  misplacedKeys,
-  dneKeys,
-  guess,
+  game,
   setGuess,
   attemptGuess,
+  userId,
 }: {
-  correctKeys: string[];
-  misplacedKeys: string[];
-  dneKeys: string[];
-  guess: LetterGuess[];
+  userId: string;
+  game: GameStatus;
   setGuess: Dispatch<SetStateAction<LetterGuess[]>>;
   attemptGuess: () => void;
 }) {
@@ -56,7 +57,7 @@ export default function Keyboard({
             <Key
               key={char}
               char={char}
-              status={"empty"}
+              status={getMostRecentStatus(game.guesses[userId] ?? [], char)}
               onClick={() => handleKeyClick(char)}
             />
           ))}
@@ -76,16 +77,42 @@ export function Key({
   onClick?: () => void;
 }) {
   if (char === "enter") {
-    return <button onClick={onClick}>ENTER</button>;
+    return <button onClick={onClick} className="outline outline-1 outline-gray-500 w-20 flex items-center justify-center rounded-sm">ENTER</button>;
   }
 
   if (char === "backspace") {
     return (
-      <button onClick={onClick}>
+      <button onClick={onClick} className="outline outline-1 outline-gray-500 w-20 flex items-center justify-center rounded-sm">
         <Delete />
       </button>
     );
   }
 
-  return <button onClick={onClick}>{char.toUpperCase()}</button>;
+  return (
+    <button
+      onClick={onClick}
+      className={`${getTileColor(status, {
+        emptyColor: "bg-gray-100",
+      })} h-10 w-10 rounded-sm text-lg outline outline-1 outline-gray-500`}
+    >
+      {char.toUpperCase()}
+    </button>
+  );
+}
+
+export function getMostRecentStatus(
+  data: LetterGuess[][],
+  letter: string,
+): GuessStatus {
+  // get the most recent status of the letter
+  for (let i = data.length - 1; i >= 0; i--) {
+    const row = data[i]!;
+    const guess = row.find((g) => g.letter === letter);
+
+    if (guess) {
+      return guess.status;
+    }
+  }
+
+  return "empty";
 }

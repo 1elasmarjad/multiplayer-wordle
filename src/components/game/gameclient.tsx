@@ -48,12 +48,8 @@ export default function GameClient({
     enabled: refetchEnabled,
   });
 
-  const {
-    isPending: guessLoading,
-    mutate: guessMutate,
-  } = useMutation({
+  const { isPending: guessLoading, mutate: guessMutate } = useMutation({
     mutationFn: async () => {
-
       console.log(`gameId: ${gameId}, guess: `, guess);
 
       const response = await makeGuess(gameId, guess);
@@ -110,15 +106,16 @@ export default function GameClient({
   }
 
   return (
-    <main className="flex h-screen w-full flex-col items-center justify-center">
-      <Board boardData={game.guesses[userId]?? []} newGuess={guess} />
+    <main className="flex h-screen w-full flex-col items-center justify-center gap-6">
+      <Board boardData={game.guesses[userId] ?? []} newGuess={guess} />
       <Keyboard
-        correctKeys={[]}
-        misplacedKeys={[]}
-        dneKeys={[]}
-        guess={guess}
+        game={game}
+        userId={userId}
         setGuess={setGuess}
-        attemptGuess={() => guessMutate()}
+        attemptGuess={() => {
+          if (guessLoading) return;
+          guessMutate();
+        }}
       />
     </main>
   );

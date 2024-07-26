@@ -11,7 +11,7 @@ const emptyRow: LetterGuess[] = [
   { letter: "", status: "empty" },
 ];
 
-const maxRows = 5;
+const maxRows = 6;
 
 export default function Board({
   boardData,
@@ -62,7 +62,7 @@ export default function Board({
 function Tile({ data }: { data: LetterGuess }) {
   return (
     <div
-      className={`${getTileColor(data.status)} flex h-24 w-24 select-none items-center justify-center rounded-md border-2 border-solid border-gray-400 text-3xl font-extrabold capitalize`}
+      className={`${getTileColor(data.status)} flex h-20 w-[4.5rem] select-none items-center justify-center rounded-md border-2 border-solid border-gray-400 text-4xl font-bold capitalize`}
     >
       {data.letter}
     </div>
