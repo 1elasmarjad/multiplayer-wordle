@@ -18,6 +18,7 @@ import {
   CardTitle,
 } from "~/components/ui/card";
 import { getGame } from "~/actions/games";
+import { env } from "~/env";
 
 export default function HomePage() {
   const router = useRouter();
@@ -51,6 +52,8 @@ export default function HomePage() {
   const { data: game } = useQuery({
     queryKey: ["game", gameId],
     queryFn: async () => {
+      if (env.NODE_ENV === "development") return null;
+
       if (gameId === undefined) return null;
 
       const game = await getGame(gameId);

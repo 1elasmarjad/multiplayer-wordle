@@ -11,7 +11,7 @@ const emptyRow: LetterGuess[] = [
   { letter: "", status: "empty" },
 ];
 
-const maxRows = 6;
+export const maxRows = 6;
 
 export default function Board({
   boardData,
@@ -31,11 +31,7 @@ export default function Board({
     d.push(newGuess);
 
     // fill in empty rows with emptyRow
-    while (d.length < maxRows) {
-      d.push(emptyRow);
-    }
-
-    setNewBoardData(d);
+    setNewBoardData(fillWithEmptyRow(d, maxRows));
   }, [boardData, newGuess]);
 
   return (
@@ -77,7 +73,7 @@ export function getTileColor(
       misplaced?: string;
       dne?: string;
       empty?: string;
-    }
+    };
   },
 ): string {
   switch (status) {
@@ -86,8 +82,21 @@ export function getTileColor(
     case "misplaced":
       return opts?.colors?.dne ?? "bg-yellow-500";
     case "dne":
-      return opts?.colors?.dne  ?? "bg-gray-200";
+      return opts?.colors?.dne ?? "bg-gray-200";
     default:
       return opts?.colors?.empty ?? "bg-transparent";
   }
+}
+
+export function fillWithEmptyRow(
+  data: LetterGuess[][],
+  maxRows: number,
+): LetterGuess[][] {
+  const d = [...data];
+
+  while (d.length < maxRows) {
+    d.push(emptyRow);
+  }
+
+  return d;
 }

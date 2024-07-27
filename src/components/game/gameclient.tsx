@@ -13,6 +13,7 @@ import { Loader2 } from "lucide-react";
 import { useState } from "react";
 import Board from "./board";
 import Keyboard from "./keyboard";
+import Leaderboard from "./leaderboard";
 
 export default function GameClient({
   gameId,
@@ -106,17 +107,27 @@ export default function GameClient({
   }
 
   return (
-    <main className="flex h-screen w-full flex-col items-center justify-center gap-6">
-      <Board boardData={game.guesses[userId] ?? []} newGuess={guess} />
-      <Keyboard
-        game={game}
-        userId={userId}
-        setGuess={setGuess}
-        attemptGuess={() => {
-          if (guessLoading) return;
-          guessMutate();
-        }}
-      />
+    <main className="flex h-screen w-full mt-12 justify-between">
+      <div className="w-full grow" />
+      
+      <div className="flex w-full max-w-2xl flex-col items-center gap-6">
+
+        <div className="text-xl bg-gray-200 font-semibold px-6 py-2 rounded-md mb-6">0:00</div>
+
+        <Board boardData={game.guesses[userId] ?? []} newGuess={guess} />
+        <Keyboard
+          game={game}
+          userId={userId}
+          setGuess={setGuess}
+          attemptGuess={() => {
+            if (guessLoading) return;
+            guessMutate();
+          }}
+        />
+      </div>
+      <div className="w-full grow flex-col items-center">
+        <Leaderboard game={game} />
+      </div>
     </main>
   );
 }

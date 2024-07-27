@@ -36,6 +36,14 @@ export async function getGame(gameId: string): Promise<
       error: string;
     }
 > {
+  const userId = await getUserId({ createIfNotExists: true });
+
+  if (!userId) {
+    return {
+      error: "User not found",
+    };
+  }
+
   const resp = await gamesCollection.findOne({
     _id: new ObjectId(gameId),
   });
@@ -45,6 +53,18 @@ export async function getGame(gameId: string): Promise<
       error: "Game not found",
     };
   }
+
+  // hide letter guesses if its not the users guesses
+  resp.guesses = Object.fromEntries(
+    Object.entries(resp.guesses).map(([key, value]) => {
+      if (key === userId) {
+        return [key, value];
+      }
+
+      return [key, value.map((row) => row.map((col) => ({ ...col, letter: "?" })))];
+    }),
+  );
+
 
   return {
     gameId: resp._id.toHexString(),
