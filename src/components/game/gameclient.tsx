@@ -9,11 +9,12 @@ import {
 import Lobby from "./lobby";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import toast from "react-hot-toast";
-import { Loader2 } from "lucide-react";
+import { Loader2, Play } from "lucide-react";
 import { useState } from "react";
 import Board from "./board";
 import Keyboard from "./keyboard";
 import Leaderboard from "./leaderboard";
+import { Button } from "../ui/button";
 
 export default function GameClient({
   gameId,
@@ -107,23 +108,49 @@ export default function GameClient({
   }
 
   return (
-    <main className="flex h-screen w-full mt-12 justify-between">
+    <main className="mt-12 flex h-screen w-full justify-between">
       <div className="w-full grow" />
-      
-      <div className="flex w-full max-w-2xl flex-col items-center gap-6">
 
-        <div className="text-xl bg-gray-200 font-semibold px-6 py-2 rounded-md mb-6">0:00</div>
+      <div className="flex w-full max-w-2xl flex-col items-center gap-6">
+        <div className="mb-6 rounded-md bg-gray-200 px-6 py-2 text-xl font-semibold">
+          0:00
+        </div>
 
         <Board boardData={game.guesses[userId] ?? []} newGuess={guess} />
-        <Keyboard
-          game={game}
-          userId={userId}
-          setGuess={setGuess}
-          attemptGuess={() => {
-            if (guessLoading) return;
-            guessMutate();
-          }}
-        />
+
+        {game.winner ? (
+          <>
+            <div className="rounded-full bg-secondary px-8 py-3 text-secondary-foreground text-center">
+              🎉{" "}
+              {game.winner === userId
+                ? "You"
+                : game.players.find((player) => player.id === userId)
+                    ?.username}{" "}
+              won! 🎉
+
+              <br/>
+
+              The word was <strong>{game.word?.toUpperCase()}</strong>
+
+            </div>
+
+            {game.leader === userId && (
+              <Button className="mt-6 gap-2">
+                Start Next Round <Play className="w-4 fill-background" />
+              </Button>
+            )}
+          </>
+        ) : (
+          <Keyboard
+            game={game}
+            userId={userId}
+            setGuess={setGuess}
+            attemptGuess={() => {
+              if (guessLoading) return;
+              guessMutate();
+            }}
+          />
+        )}
       </div>
       <div className="w-full grow flex-col items-center">
         <Leaderboard game={game} />

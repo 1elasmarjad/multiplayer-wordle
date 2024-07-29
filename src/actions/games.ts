@@ -24,6 +24,7 @@ export interface GameStatus {
   guesses: Record<string, LetterGuess[][]>;
   winner: string | null;
   round: number;
+  word?: string;
 
   maxRounds?: number;
 
@@ -61,10 +62,12 @@ export async function getGame(gameId: string): Promise<
         return [key, value];
       }
 
-      return [key, value.map((row) => row.map((col) => ({ ...col, letter: "?" })))];
+      return [
+        key,
+        value.map((row) => row.map((col) => ({ ...col, letter: "?" }))),
+      ];
     }),
   );
-
 
   return {
     gameId: resp._id.toHexString(),
@@ -76,6 +79,7 @@ export async function getGame(gameId: string): Promise<
     round: resp.round,
     inLobby: resp.inLobby,
     maxRounds: resp.maxRounds,
+    word: resp.winner ? resp.word : undefined,
   };
 }
 
@@ -157,6 +161,8 @@ export async function makeGuess(
 
   allGuesses[userId] = [...userGuesses, updatedGuess];
 
+  const winner = updatedGuess.every((letter) => letter.status === "correct");
+
   const userIdGuess = `guesses.${userId}`;
 
   await gamesCollection.updateOne(
@@ -166,6 +172,7 @@ export async function makeGuess(
     {
       $set: {
         [userIdGuess]: allGuesses[userId],
+        winner: winner ? userId : undefined,
       },
     },
   );

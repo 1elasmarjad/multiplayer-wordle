@@ -1,7 +1,7 @@
 "use server";
 
 import { gamesCollection } from "~/lib/mongodb";
-import { type GameStatus, getGame } from "./games";
+import { getGame } from "./games";
 import { getUserId } from "./users";
 import { ObjectId } from "mongodb";
 
