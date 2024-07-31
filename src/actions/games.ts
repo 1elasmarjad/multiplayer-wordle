@@ -24,6 +24,7 @@ export interface GameStatus {
   guesses: Record<string, LetterGuess[][]>;
   winner: string | null;
   round: number;
+  roundEnds?: number;
   word?: string;
 
   maxRounds?: number;
@@ -32,7 +33,9 @@ export interface GameStatus {
 }
 
 export async function getGame(gameId: string): Promise<
-  | GameStatus
+  | (GameStatus & {
+      roundEnded: boolean;
+    })
   | {
       error: string;
     }
@@ -69,6 +72,9 @@ export async function getGame(gameId: string): Promise<
     }),
   );
 
+  const noTime = resp.roundEnds ? Date.now() > resp.roundEnds : false;
+  const roundEnded = noTime || !!resp.winner;
+
   return {
     gameId: resp._id.toHexString(),
     players: resp.players,
@@ -79,11 +85,13 @@ export async function getGame(gameId: string): Promise<
     round: resp.round,
     inLobby: resp.inLobby,
     maxRounds: resp.maxRounds,
-    word: resp.winner ? resp.word : undefined,
+    word: roundEnded ? resp.word : undefined,
+    roundEnds: resp.roundEnds,
+    roundEnded: noTime || !!resp.winner,
   };
 }
 
-export async function startGame(
+export async function startRound(
   gameId: string,
 ): Promise<void | { error: string }> {
   const userId = await getUserId({ createIfNotExists: true });
@@ -98,7 +106,7 @@ export async function startGame(
 
   if (game.leader !== userId) {
     return {
-      error: "Only the leader can start the game",
+      error: "Only the leader can start the round",
     };
   }
 
@@ -109,6 +117,13 @@ export async function startGame(
     {
       $set: {
         inLobby: false,
+        roundEnds: Date.now() + 1000 * 60 * 5, // 2 minutes
+        guesses: {},
+        winner: undefined,
+      },
+
+      $inc: {
+        round: 1,
       },
     },
   );
@@ -118,6 +133,12 @@ export async function makeGuess(
   gameId: string,
   guess: LetterGuess[],
 ): Promise<Record<string, LetterGuess[][]> | { error: string }> {
+  if (guess.length !== 5) {
+    return {
+      error: "Invalid guess",
+    };
+  }
+
   const userId = (await getUserId({ createIfNotExists: true }))!;
 
   const resp = await gamesCollection.findOne(
@@ -129,6 +150,7 @@ export async function makeGuess(
         guesses: 1,
         players: 1,
         word: 1,
+        roundEnds: 1,
       },
     },
   );
@@ -154,6 +176,13 @@ export async function makeGuess(
   if (userGuesses.length >= 6) {
     return {
       error: "You have already made the max amount of guesses",
+    };
+  }
+
+  // round ended?
+  if (resp.roundEnds && Date.now() > resp.roundEnds) {
+    return {
+      error: "The round has ended",
     };
   }
 

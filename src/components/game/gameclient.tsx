@@ -5,6 +5,7 @@ import {
   getGame,
   makeGuess,
   type LetterGuess,
+  startRound,
 } from "~/actions/games";
 import Lobby from "./lobby";
 import { useMutation, useQuery } from "@tanstack/react-query";
@@ -15,6 +16,7 @@ import Board from "./board";
 import Keyboard from "./keyboard";
 import Leaderboard from "./leaderboard";
 import { Button } from "../ui/button";
+import Timer from "./timer";
 
 export default function GameClient({
   gameId,
@@ -24,7 +26,12 @@ export default function GameClient({
   userId: string;
 }) {
   const [refetchEnabled, setRefetchEnabled] = useState<boolean>(true);
-  const [game, setGame] = useState<GameStatus | null>(null);
+  const [game, setGame] = useState<
+    | (GameStatus & {
+        roundEnded: boolean;
+      })
+    | null
+  >(null);
   const [guess, setGuess] = useState<LetterGuess[]>([]);
 
   const { isLoading: gameLoading } = useQuery({
@@ -79,6 +86,21 @@ export default function GameClient({
     },
   });
 
+  const { isPending: newRoundLoading, mutate: beginNextRound } = useMutation({
+    mutationFn: async ({ gameId }: { gameId: string }) => {
+      const resp = await startRound(gameId);
+
+      if (resp && "error" in resp) {
+        throw new Error(resp.error);
+      }
+
+      return resp;
+    },
+    onError: (error) => {
+      toast.error(error.message);
+    },
+  });
+
   if (gameLoading) {
     return (
       <main className="flex h-screen w-full flex-col items-center justify-center">
@@ -112,44 +134,68 @@ export default function GameClient({
       <div className="w-full grow" />
 
       <div className="flex w-full max-w-2xl flex-col items-center gap-6">
-        <div className="mb-6 rounded-md bg-gray-200 px-6 py-2 text-xl font-semibold">
-          0:00
-        </div>
+        {game.roundEnds && !game.roundEnded && (
+          <div className="mb-6 rounded-md bg-gray-200 px-6 py-2 text-xl font-semibold">
+            <Timer roundEnds={game.roundEnds} />
+          </div>
+        )}
 
         <Board boardData={game.guesses[userId] ?? []} newGuess={guess} />
 
         {game.winner ? (
           <>
-            <div className="rounded-full bg-secondary px-8 py-3 text-secondary-foreground text-center">
+            <div className="rounded-full bg-secondary px-8 py-3 text-center text-secondary-foreground">
               🎉{" "}
               {game.winner === userId
                 ? "You"
-                : game.players.find((player) => player.id === userId)
+                : game.players.find((player) => player.id === game.winner)
                     ?.username}{" "}
               won! 🎉
-
-              <br/>
-
+              <br />
               The word was <strong>{game.word?.toUpperCase()}</strong>
-
             </div>
-
-            {game.leader === userId && (
-              <Button className="mt-6 gap-2">
-                Start Next Round <Play className="w-4 fill-background" />
-              </Button>
-            )}
           </>
         ) : (
-          <Keyboard
-            game={game}
-            userId={userId}
-            setGuess={setGuess}
-            attemptGuess={() => {
-              if (guessLoading) return;
-              guessMutate();
-            }}
-          />
+          <>
+            {game.roundEnded ? (
+              <div className="text-center">
+                Out of Time! The word was <strong>{game.word}</strong> <br />
+                No winner.
+              </div>
+            ) : (
+              <Keyboard
+                game={game}
+                userId={userId}
+                setGuess={setGuess}
+                attemptGuess={() => {
+                  if (guessLoading) return;
+                  guessMutate();
+                }}
+              />
+            )}
+          </>
+        )}
+
+        {game.roundEnded && game.leader === userId && (
+          <Button
+            className="mt-6 gap-2"
+            onClick={() =>
+              beginNextRound({
+                gameId,
+              })
+            }
+            disabled={newRoundLoading}
+          >
+            {newRoundLoading ? (
+              <>
+                Start Next Round <Loader2 className="w-4 animate-spin" />
+              </>
+            ) : (
+              <>
+                Start Next Round <Play className="w-4 fill-background" />
+              </>
+            )}
+          </Button>
         )}
       </div>
       <div className="w-full grow flex-col items-center">

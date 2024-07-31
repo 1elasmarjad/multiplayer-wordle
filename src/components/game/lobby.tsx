@@ -1,6 +1,6 @@
 "use client";
 
-import { startGame, type GameStatus } from "~/actions/games";
+import { startRound, type GameStatus } from "~/actions/games";
 import PlayerList from "./playerlist";
 import { Loader2, Play } from "lucide-react";
 import { Button } from "../ui/button";
@@ -17,7 +17,7 @@ export default function Lobby({
 }) {
   const { isPending: gameLoading, mutate: begin } = useMutation({
     mutationFn: async () => {
-      const resp = await startGame(data.gameId);
+      const resp = await startRound(data.gameId);
 
       if (resp && "error" in resp) {
         throw new Error(resp.error);
@@ -38,7 +38,6 @@ export default function Lobby({
             <h1 className="text-center text-xl">
               Waiting for the host to continue...
             </h1>
-            <Loader2 className="animate-spin" />
           </div>
         )}
 
