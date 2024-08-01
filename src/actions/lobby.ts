@@ -115,7 +115,7 @@ async function createLobby(username: string): Promise<{
     leader: requesterId!,
     maxPlayers: 2, // TODO: allow more players in the future
     guesses: {},
-    word: "river", // TODO: randomize word
+    word: "",
     winner: null,
     round: 0, // not started yet
     inLobby: true,

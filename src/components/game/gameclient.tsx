@@ -28,7 +28,7 @@ export default function GameClient({
   const [refetchEnabled, setRefetchEnabled] = useState<boolean>(true);
   const [game, setGame] = useState<
     | (GameStatus & {
-        roundEnded: boolean;
+        roundEndReason?: "time" | "winner" | "maxGuesses";
       })
     | null
   >(null);
@@ -45,6 +45,10 @@ export default function GameClient({
           return null;
         }
 
+        if (response.roundEnded) {
+          setGuess([]);
+        }
+
         setGame(response);
 
         return response;
@@ -59,8 +63,6 @@ export default function GameClient({
 
   const { isPending: guessLoading, mutate: guessMutate } = useMutation({
     mutationFn: async () => {
-      console.log(`gameId: ${gameId}, guess: `, guess);
-
       const response = await makeGuess(gameId, guess);
 
       if ("error" in response) {
@@ -142,36 +144,46 @@ export default function GameClient({
 
         <Board boardData={game.guesses[userId] ?? []} newGuess={guess} />
 
-        {game.winner ? (
+        {!game.roundEnded && (
+          <Keyboard
+            game={game}
+            userId={userId}
+            setGuess={setGuess}
+            attemptGuess={() => {
+              if (guessLoading) return;
+              guessMutate();
+            }}
+          />
+        )}
+
+        {game.roundEnded && (
           <>
-            <div className="rounded-full bg-secondary px-8 py-3 text-center text-secondary-foreground">
-              🎉{" "}
-              {game.winner === userId
-                ? "You"
-                : game.players.find((player) => player.id === game.winner)
-                    ?.username}{" "}
-              won! 🎉
-              <br />
-              The word was <strong>{game.word?.toUpperCase()}</strong>
-            </div>
-          </>
-        ) : (
-          <>
-            {game.roundEnded ? (
+            {game.roundEndReason === "time" && (
               <div className="text-center">
                 Out of Time! The word was <strong>{game.word}</strong> <br />
                 No winner.
               </div>
-            ) : (
-              <Keyboard
-                game={game}
-                userId={userId}
-                setGuess={setGuess}
-                attemptGuess={() => {
-                  if (guessLoading) return;
-                  guessMutate();
-                }}
-              />
+            )}
+
+            {game.roundEndReason === "maxGuesses" && (
+              <div className="text-center">
+                All players have made the maximum number of guesses! <br />
+                The word was <strong>{game.word}</strong> <br />
+                No winner.
+              </div>
+            )}
+
+            {game.roundEndReason === "winner" && (
+              <div className="rounded-full bg-secondary px-8 py-3 text-center text-secondary-foreground">
+                🎉{" "}
+                {game.winner === userId
+                  ? "You"
+                  : game.players.find((player) => player.id === game.winner)
+                      ?.username}{" "}
+                won! 🎉
+                <br />
+                The word was <strong>{game.word?.toUpperCase()}</strong>
+              </div>
             )}
           </>
         )}

@@ -3,6 +3,7 @@
 import { ObjectId } from "mongodb";
 import { gamesCollection } from "~/lib/mongodb";
 import { getUserId } from "./users";
+import { maxRows } from "~/utils";
 
 export type GuessStatus = "correct" | "misplaced" | "dne" | "empty";
 
@@ -25,6 +26,7 @@ export interface GameStatus {
   winner: string | null;
   round: number;
   roundEnds?: number;
+  roundEnded: boolean;
   word?: string;
 
   maxRounds?: number;
@@ -34,7 +36,7 @@ export interface GameStatus {
 
 export async function getGame(gameId: string): Promise<
   | (GameStatus & {
-      roundEnded: boolean;
+      roundEndReason?: "time" | "winner" | "maxGuesses";
     })
   | {
       error: string;
@@ -75,6 +77,24 @@ export async function getGame(gameId: string): Promise<
   const noTime = resp.roundEnds ? Date.now() > resp.roundEnds : false;
   const roundEnded = noTime || !!resp.winner;
 
+  const allGuesses = resp?.guesses ?? {};
+
+  // all other users have max guesses?
+  const allGuessesComplete = resp.players.every((player) => {
+    const target = allGuesses[player.id];
+    return target && target.length >= maxRows;
+  });
+
+  let roundEndReason: "time" | "winner" | "maxGuesses" | undefined = undefined;
+
+  if (resp.winner) {
+    roundEndReason = "winner";
+  } else if (allGuessesComplete) {
+    roundEndReason = "maxGuesses";
+  } else if (noTime) {
+    roundEndReason = "time";
+  }
+
   return {
     gameId: resp._id.toHexString(),
     players: resp.players,
@@ -87,7 +107,8 @@ export async function getGame(gameId: string): Promise<
     maxRounds: resp.maxRounds,
     word: roundEnded ? resp.word : undefined,
     roundEnds: resp.roundEnds,
-    roundEnded: noTime || !!resp.winner,
+    roundEnded: noTime || !!resp.winner || allGuessesComplete,
+    roundEndReason: roundEndReason,
   };
 }
 
@@ -110,6 +131,13 @@ export async function startRound(
     };
   }
 
+  const resp = await fetch(
+    "https://random-word-api.herokuapp.com/word?length=5&lang=en",
+  );
+  const words = (await resp.json()) as string[];
+
+  console.log(words);
+
   await gamesCollection.updateOne(
     {
       _id: new ObjectId(gameId),
@@ -120,6 +148,7 @@ export async function startRound(
         roundEnds: Date.now() + 1000 * 60 * 5, // 2 minutes
         guesses: {},
         winner: undefined,
+        word: words[0],
       },
 
       $inc: {
@@ -173,7 +202,7 @@ export async function makeGuess(
   const allGuesses = resp?.guesses ?? {};
   const userGuesses = allGuesses[userId] ?? [];
 
-  if (userGuesses.length >= 6) {
+  if (userGuesses.length >= maxRows) {
     return {
       error: "You have already made the max amount of guesses",
     };

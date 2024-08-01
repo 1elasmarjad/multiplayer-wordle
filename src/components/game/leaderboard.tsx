@@ -2,7 +2,8 @@
 
 import { Loader2 } from "lucide-react";
 import { type LetterGuess, type GameStatus } from "~/actions/games";
-import { fillWithEmptyRow, getTileColor, maxRows } from "./board";
+import { fillWithEmptyRow, getTileColor } from "./board";
+import { maxRows } from "~/utils";
 
 export default function Leaderboard({ game }: { game: GameStatus | null }) {
   if (!game) {

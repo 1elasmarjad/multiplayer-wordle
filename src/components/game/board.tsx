@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { type GuessStatus, type LetterGuess } from "~/actions/games";
+import { maxRows } from "~/utils";
 
 const emptyRow: LetterGuess[] = [
   { letter: "", status: "empty" },
@@ -10,8 +11,6 @@ const emptyRow: LetterGuess[] = [
   { letter: "", status: "empty" },
   { letter: "", status: "empty" },
 ];
-
-export const maxRows = 6;
 
 export default function Board({
   boardData,
@@ -28,7 +27,10 @@ export default function Board({
     const d = [...boardData];
 
     // push newGuess to the board
-    d.push(newGuess);
+
+    if (d.length < maxRows) {
+      d.push(newGuess);
+    }
 
     // fill in empty rows with emptyRow
     setNewBoardData(fillWithEmptyRow(d, maxRows));
