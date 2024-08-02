@@ -4,6 +4,7 @@ import { ObjectId } from "mongodb";
 import { gamesCollection } from "~/lib/mongodb";
 import { getUserId } from "./users";
 import { maxRows } from "~/utils";
+import randomWord from "~/words";
 
 export type GuessStatus = "correct" | "misplaced" | "dne" | "empty";
 
@@ -131,12 +132,7 @@ export async function startRound(
     };
   }
 
-  const resp = await fetch(
-    "https://random-word-api.herokuapp.com/word?length=5&lang=en",
-  );
-  const words = (await resp.json()) as string[];
-
-  console.log(words);
+  const word = randomWord()?.toLowerCase();
 
   await gamesCollection.updateOne(
     {
@@ -148,7 +144,7 @@ export async function startRound(
         roundEnds: Date.now() + 1000 * 60 * 5, // 2 minutes
         guesses: {},
         winner: undefined,
-        word: words[0],
+        word: word,
       },
 
       $inc: {
@@ -164,7 +160,7 @@ export async function makeGuess(
 ): Promise<Record<string, LetterGuess[][]> | { error: string }> {
   if (guess.length !== 5) {
     return {
-      error: "Invalid guess",
+      error: "Guess must be 5 letters",
     };
   }
 
