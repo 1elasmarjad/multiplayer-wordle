@@ -211,7 +211,7 @@ export default function GameClient({
         )}
       </div>
       <div className="w-full grow flex-col items-center">
-        <Leaderboard game={game} />
+        <Leaderboard game={game} userId={userId}/>
       </div>
     </main>
   );
