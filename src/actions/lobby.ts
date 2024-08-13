@@ -119,6 +119,7 @@ async function createLobby(username: string): Promise<{
     winner: null,
     round: 0, // not started yet
     inLobby: true,
+    roundEnded: false
   });
 
   return {
