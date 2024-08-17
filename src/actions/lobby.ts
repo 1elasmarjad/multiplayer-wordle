@@ -70,11 +70,15 @@ export async function joinLobby({
   }
 
   if (!game.inLobby) {
-    throw new Error("Game has already started");
+    return {
+      error: "Game has already started",
+    };
   }
 
   if (game.players.length >= game.maxPlayers) {
-    throw new Error("Game is full");
+    return {
+      error: "Game is full",
+    };
   }
 
   // Add player to game
@@ -119,7 +123,7 @@ async function createLobby(username: string): Promise<{
     winner: null,
     round: 0, // not started yet
     inLobby: true,
-    roundEnded: false
+    roundEnded: false,
   });
 
   return {
