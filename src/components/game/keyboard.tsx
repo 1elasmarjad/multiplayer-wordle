@@ -105,7 +105,7 @@ export function Key({
       onClick={onClick}
       className={`${getTileColor(
         status,
-      )} h-10 w-10 rounded-sm text-lg outline outline-1 outline-gray-500`}
+      )} h-6 w-6 sm:h-10 sm:w-10 rounded-sm text-lg outline outline-1 outline-gray-500`}
     >
       {char.toUpperCase()}
     </button>

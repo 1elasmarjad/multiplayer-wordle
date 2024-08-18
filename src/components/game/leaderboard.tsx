@@ -21,7 +21,7 @@ export default function Leaderboard({
       <div className="hidden flex-col gap-6 md:flex">
         <h2 className="text-center font-bold">Leaderboard</h2>
         {game.players
-          // .filter((player) => player.id !== userId)
+          .filter((player) => player.id !== userId)
           .map((player) => (
             <PlayerData
               key={player.id}
